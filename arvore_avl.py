@@ -230,7 +230,6 @@ class ArvoreAVL():
             atual = atual.parent
 
 my_tree = ArvoreAVL()
-# nodes = [5,3,8,2,4,6,12,1,7,10,13,9,11]
-nodes = [1,2,3,4,5]
+nodes = [5,3,8,2,4,6,12,1,7,10,13,9,11]
 my_tree.insertNodes(nodes)
 my_tree.inOrder(my_tree.root)
