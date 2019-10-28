@@ -103,8 +103,8 @@ class ArvoreAVL():
         else:
             pred = self.predecessor(node)
             node.value = pred.value
-            del node
             self.remove(pred)
+            self.retrace(node)
 
     def predecessor(self, node):
         pred = node.left
@@ -230,6 +230,13 @@ class ArvoreAVL():
             atual = atual.parent
 
 my_tree = ArvoreAVL()
-nodes = [5,3,8,2,4,6,12,1,7,10,13,9,11]
+# nodes = [5,3,8,2,4,6,12,1,7,10,13,9,11]
+nodes = [1,2,3,4,5,6,7,8,9,10]
 my_tree.insertNodes(nodes)
+my_tree.remove(7)
+my_tree.remove(9)
+my_tree.remove(8)
+
+my_tree.insert(12)
+my_tree.remove(6)
 my_tree.inOrder(my_tree.root)
