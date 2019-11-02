@@ -45,7 +45,9 @@ class ArvoreVermelhoPreto():
         self.nil = Node(v='nil', color='black')
 
     def setRoot(self, r):
-        self.root = Node(r)
+        if type(r) is int: self.root = Node(r)
+        elif type(r) is Node: self.root = Node(r.value)
+
         self.root.left = self.nil
         self.root.right = self.nil
         self.root.color = 'black'
@@ -55,22 +57,26 @@ class ArvoreVermelhoPreto():
         self.root.showNode()
 
     def getGrandparent(self, node):
-        if node.parent.parent != None: return node.parent.parent
-        else: return None
+        if node.parent.parent != None: 
+            return node.parent.parent
+        else: 
+            return None
 
     def getUncle(self, node):
         g = self.getGrandparent(node)
 
-        if g.left != node.parent: return g.left
-        else: return g.right
+        if g.left != node.parent:
+            return g.left
+        else:
+            return g.right
 
     def getSibling(self, node):
-        if node.parent.left != node: return node.parent.left
-        else: return node.parent.right
+        if node.parent.left != node:
+            return node.parent.left
+        else:
+            return node.parent.right
 
     def insert(self, v, check_insertion=True):
-        # Cria um novo nó com valor v e insere na árvore no local correto
-
         new_node = Node(v)
         new_node.left = self.nil
         new_node.right = self.nil
@@ -97,56 +103,56 @@ class ArvoreVermelhoPreto():
             self.insertCase2(node)
 
         # Caso 3: se as cores do pai e do tio forem vermelho
-        elif node.parent.color == 'red' and my_tree.getUncle(node).color == 'red':
+        elif node.parent.color == 'red' and self.getUncle(node).color == 'red':
             self.insertCase3(node)
 
-        elif node.parent.color == 'red' and my_tree.getUncle(node).color == 'black':
+        # Caso 4: se a cor do pai for vermelho e a do tio for preta
+        elif node.parent.color == 'red' and self.getUncle(node).color == 'black':
             self.insertCase4(node)
 
     def insertCase1(self, node):
-        if node.parent == None: node.color = 'black'
+        if node.parent == None:
+            node.color = 'black'
 
     def insertCase2(self, node):
-        # Não faz nada...
+        # Do nothing...
         pass
 
     def insertCase3(self, node):
         node.parent.color = 'black'
-        my_tree.getUncle(node).color = 'black'
-        my_tree.getGrandparent(node).color = 'red'
+        self.getUncle(node).color = 'black'
+        self.getGrandparent(node).color = 'red'
         
-        my_tree.checkInsertionCases(my_tree.getGrandparent(node))
+        self.checkInsertionCases(self.getGrandparent(node))
 
     def insertCase4(self, node):
         # left-right
-        if node == node.parent.right and node.parent == my_tree.getGrandparent(node).left:
-            my_tree.rotateLeft(node.parent)
+        if node == node.parent.right and node.parent == self.getGrandparent(node).left:
+            self.rotateLeft(node.parent)
             node.color = 'black'
             node.parent.color = 'red'
-            my_tree.rotateRight(node.parent)
+            self.rotateRight(node.parent)
 
         # right-left
-        elif node == node.parent.left and node.parent == my_tree.getGrandparent(node).right:
-            my_tree.rotateRight(node.parent)
+        elif node == node.parent.left and node.parent == self.getGrandparent(node).right:
+            self.rotateRight(node.parent)
             node.color = 'black'
             node.parent.color = 'red'
-            my_tree.rotateLeft(node.parent)
+            self.rotateLeft(node.parent)
 
         # right-right
-        elif node == node.parent.left and node.parent == my_tree.getGrandparent(node).left:
+        elif node == node.parent.left and node.parent == self.getGrandparent(node).left:
             node.parent.color = 'black'
-            my_tree.getGrandparent(node).color = 'red'
-            my_tree.rotateRight(my_tree.getGrandparent(node))
+            self.getGrandparent(node).color = 'red'
+            self.rotateRight(self.getGrandparent(node))
 
         # left-left
-        elif node == node.parent.right and node.parent == my_tree.getGrandparent(node).right:
+        elif node == node.parent.right and node.parent == self.getGrandparent(node).right:
             node.parent.color = 'black'
-            my_tree.getGrandparent(node).color = 'red'
-            my_tree.rotateLeft(my_tree.getGrandparent(node))
+            self.getGrandparent(node).color = 'red'
+            self.rotateLeft(self.getGrandparent(node))
 
     def remove(self, v, check_removal=True):
-        # Remove um valor v da árvore
-
         if type(v) is int: node = self.findNode(v)
         elif type(v) is Node: node = v
 
@@ -154,14 +160,28 @@ class ArvoreVermelhoPreto():
         if node.left == self.nil and node.right == self.nil:
             if node.parent == None:
                 return None
+            
             if node.parent.left == node: 
                 node.parent.left = self.nil
-                to_check = node.parent.left
             else: 
                 node.parent.right = self.nil
-                to_check = node.parent.right
 
-            del node
+            if node.color == 'red':
+                # Do nothing...
+                del node
+            
+            elif node.color == 'black':
+                to_check = node.left # Tanto faz se é left ou right já que os dos são nil
+                to_check.parent = node.parent
+
+                if node == node.parent.left:
+                    node.parent.left = to_check
+                else:
+                    node.parent.right
+                
+                del node
+
+                self.checkRemoveCases(to_check)
 
         # Remoção se o nó só tem o filho da direita
         elif node.left == self.nil:
@@ -169,7 +189,6 @@ class ArvoreVermelhoPreto():
             if node == self.root:
                 self.setRoot(node.right)
                 self.root.parent = None
-                to_check = self.root
             else:
                 if node.parent.left == node: 
                     node.parent.left = node.right
@@ -180,6 +199,8 @@ class ArvoreVermelhoPreto():
 
                 node.right.parent = node.parent
                 del node
+
+                self.checkRemoveCases(to_check)
 
         # Remoção se o nó só tem o filho da esquerda
         elif node.right == None:
@@ -198,12 +219,105 @@ class ArvoreVermelhoPreto():
                 node.left.parent = node.parent
                 del node
 
+                self.checkRemoveCases(to_check)
+
         # Remoção se o nó tem dois filhos
         else:
             pred = self.predecessor(node)
             node.value = pred.value
-            to_check = node
             self.remove(pred)
+
+    def checkRemoveCases(self, node):
+        # Caso 1: node é a nova raiz
+        if node.parent == None:
+            # Do nothing...
+            pass
+
+        # Caso 2: todos pretos, apenas sibling é vermelho
+        elif (node.color == 'black' and node.parent.color == 'black' and 
+            self.getSibling(node).color == 'red' and 
+            self.getSibling(node).left.color == 'black' and
+            self.getSibling(node).right.color == 'black'):
+
+            self.removeCase2(node)
+
+        # Caso 3: todos pretos
+        if (node.color == 'black' and node.parent.color == 'black' and 
+            self.getSibling(node).color == 'black' and 
+            self.getSibling(node).left.color == 'black' and
+            self.getSibling(node).right.color == 'black'):
+
+            self.removeCase3(node)
+
+        # Caso 4: todos pretos, apenas o pai de node é vermelho
+        elif (node.color == 'black' and node.parent.color == 'red' and 
+            self.getSibling(node).color == 'black' and 
+            self.getSibling(node).left.color == 'black' and
+            self.getSibling(node).right.color == 'black'):
+
+            self.removeCase4(node)
+
+        # Caso 5: todos pretos, apenas o filho a esqueda de sibling é vermelho
+        elif (node.color == 'black' and node.parent.color == 'black' and
+            self.getSibling(node).color == 'black' and
+            self.getSibling(node).left.color == 'red' and
+            self.getSibling(node).right.color == 'black'):
+
+            self.removeCase5(node)
+
+        # Caso 5 especial: todos pretos, mas os dois filhos de sibling são vermelhos
+        elif (node.color == 'black' and node.parent.color == 'black' and
+            self.getSibling(node).color == 'black' and
+            self.getSibling(node).left.color == 'red' and
+            self.getSibling(node).right.color == 'red'):
+
+            self.removeCase5S(node)
+
+        # Caso 6: todos pretos, apenas o filho a direita de sibling é vermelho
+        elif (node.color == 'black' and
+            self.getSibling(node).color == 'black' and
+            self.getSibling(node).left.color == 'black' and
+            self.getSibling(node).right.color == 'red'):
+
+            self.removeCase6(node)
+
+    def removeCase2(self, node):
+        node.parent.color = 'red'
+        self.getSibling(node).color = 'black'
+        self.rotateLeft(node.parent)
+
+    def removeCase3(self, node):
+        self.getSibling(node).color = 'red'
+
+    def removeCase4(self, node):
+        node.parent.color = 'black'
+        self.getSibling(node).color = 'red'
+
+    def removeCase5(self, node):
+        p = node.parent # para não perder o ponteiro para o pai
+
+        self.getSibling(node).color = 'red'
+        
+        self.getSibling(node).left.color = 'black'
+        self.rotateRight(self.getSibling(node))
+
+        node.parent = p
+        self.removeCase6(node)
+
+    def removeCase5S(self, node):
+        self.getSibling(node).right.color = 'black'
+        self.rotateLeft(node.parent)
+
+    def removeCase6(self, node):
+        p = node.parent
+        
+        self.getSibling(node).right.color = 'black'
+        self.getSibling(node).color = node.parent.color
+        node.parent.color = 'black'
+        self.rotateLeft(p)
+
+        self.nil.parent = None # A folha nil não tem pai pois é compartilhada,
+                               #  então é necessário resetar
 
     def predecessor(self, node):
         pred = node.left
@@ -271,17 +385,51 @@ class ArvoreVermelhoPreto():
 
         aux.right = node
 
-    def preOrder(self, root):
-        root.showNode()
-        if root.left != self.nil: self.preOrder(root.left)
-        if root.right != self.nil: self.preOrder(root.right)
+    # Chama a função recursva para imprimir os nós em ordem 
+    # Não tem necessidade de passar a raiz da árvore, já que é um método dela mesma
+    def inOrder(self):
+        self.inOrderRec(self.root)
 
-    def inOrder(self, root):
-        if root.left != self.nil: self.inOrder(root.left)
-        root.showNode()
-        if root.right != self.nil: self.inOrder(root.right)
+    # Percorre a arvore recursivamente e imprime os nós em ordem
+    def inOrderRec(self, node):
+        if node.left != self.nil: self.inOrderRec(node.left)
+        node.showNode()
+        if node.right != self.nil: self.inOrderRec(node.right)
 
-    def postOrder(self, root):
-        if root.left != self.nil: self.postOrder(root.left)
-        if root.right != self.nil: self.postOrder(root.right)
-        root.showNode()
+    def preOrder(self):
+        self.preOrderRec(self.root)
+
+    def preOrderRec(self, node):
+        node.showNode()
+        if node.left != self.nil: self.preOrderRec(node.left)
+        if node.right != self.nil: self.preOrderRec(node.right)
+
+    def postOrder(self):
+        self.postOrderRec(self.root)
+
+    def postOrderRec(self, node):
+        if node.left != self.nil: self.postOrder(node.left)
+        if node.right != self.nil: self.postOrder(node.right)
+        node.showNode()
+
+# Alguns exemplos...
+
+arvore = ArvoreVermelhoPreto()
+
+# EXEMPLO 1:
+# nodes1 = [30,10,60,5,15,50,70,90]
+# arvore.insertNodes(nodes1)
+# arvore.inOrder()
+
+# EXEMPLO 2:
+# Essa entrada causa os casos dw remoção 5-6 se remover o número 10
+# nodes = [30,10,60,50]
+# arvore.insertNodes(nodes)
+
+# print('#'*20, 'Antes de remover 10', '#'*20)
+# arvore.inOrder()
+
+# arvore.remove(10)
+
+# print('#'*20, 'Depois de remover 10', '#'*20)
+# arvore.inOrder()
