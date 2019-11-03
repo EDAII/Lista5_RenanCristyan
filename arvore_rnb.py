@@ -1,3 +1,8 @@
+# Nome: Renan Cristyan A. Pinheiro
+# Matrícula: 17/0044386
+# Disciplina: Estruturas de Dados 2 - 2019/2
+# Professor: Maurício Serrano
+
 # Árvore Vermelho e Preto
 
 from time import sleep
