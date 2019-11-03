@@ -381,7 +381,7 @@ class ArvoreVermelhoPreto():
 
         node.parent = node.left
         node.left = node.left.right
-        if node.right != None: node.left.parent = node
+        if node.left != None: node.left.parent = node
 
         aux.right = node
 

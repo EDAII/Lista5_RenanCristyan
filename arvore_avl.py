@@ -5,6 +5,27 @@
 
 # Árvore AVL
 
+from random import randint
+from time import sleep
+
+def random_nodes(quantity, max_number, repeated=False):
+    nodes = []
+    i = 0
+
+    if repeated is False and max_number < quantity:
+        print('Número máximo insuficiente para gerar valores únicos. Ajustando...')
+        max_number = 2*quantity
+
+    while i < quantity:
+        num = randint(1, max_number)
+        if not repeated:
+            while num in nodes:
+                num = randint(1, max_number)
+        nodes.append(num)
+        i += 1
+    
+    return nodes
+
 class Node():
     def __init__(self, v):
         self.value = v
@@ -51,12 +72,12 @@ class ArvoreAVL():
         print('Raiz da árvore: ')
         self.root.showNode()
 
-    def insert(self, v):
+    def insert(self, v, retrace=True):
         new_node = Node(v)
         new_node_parent = self.findNode(v, return_last_node=True)
         new_node.setParent(new_node_parent)
 
-        self.retrace(new_node)
+        if retrace: self.retrace(new_node)
 
     def insertNodes(self, list_of_values):
         self.setRoot(list_of_values[0])
@@ -138,20 +159,29 @@ class ArvoreAVL():
             else:
                 return atual
 
-    def preOrder(self, root):
-        root.showNode()
-        if root.left != None: self.preOrder(root.left)
-        if root.right != None: self.preOrder(root.right)
+    def inOrder(self):
+        self.inOrderRec(self.root)
 
-    def inOrder(self, root):
-        if root.left != None: self.inOrder(root.left)
-        root.showNode()
-        if root.right != None: self.inOrder(root.right)
+    def preOrder(self):
+        self.preOrderRec(self.root)
 
-    def postOrder(self, root):
-        if root.left != None: self.postOrder(root.left)
-        if root.right != None: self.postOrder(root.right)
-        root.showNode()
+    def postOrder(self):
+        self.postOrderRec(self)
+
+    def inOrderRec(self, node):
+        if node.left != None: self.inOrderRec(node.left)
+        node.showNode()
+        if node.right != None: self.inOrderRec(node.right)
+
+    def preOrderRec(self, node):
+        node.showNode()
+        if node.left != None: self.preOrderRec(node.left)
+        if node.right != None: self.preOrderRec(node.right)
+
+    def postOrderRec(self, node):
+        if node.left != None: self.postOrderRec(node.left)
+        if node.right != None: self.postOrderRec(node.right)
+        node.showNode()
 
     def rotateLeft(self, node):
         aux = node.right
@@ -179,7 +209,7 @@ class ArvoreAVL():
 
         node.parent = node.left
         node.left = node.left.right
-        if node.right != None: node.left.parent = node
+        if node.left != None: node.left.parent = node
 
         aux.right = node
 
@@ -208,17 +238,9 @@ class ArvoreAVL():
 
         while atual != None:
             if self.getBalanceFactor(atual) >= 2 or self.getBalanceFactor(atual) <= -2:
-                
-                # Caso para rotação right-right
-                if atual.left != None and atual.left.left != None:
-                    self.rotateRight(atual)
-
-                # Caso para rotação left-left
-                elif atual.right != None and atual.right.right != None:
-                    self.rotateLeft(atual)
 
                 # Caso para rotação right-left
-                elif atual.right != None and atual.right.left != None:
+                if atual.right != None and atual.right.left != None:
                     self.rotateRight(atual.right)
                     self.rotateLeft(atual)
 
@@ -227,16 +249,19 @@ class ArvoreAVL():
                     self.rotateLeft(atual.left)
                     self.rotateRight(atual)
 
+                # Caso para rotação right-right
+                elif atual.left != None and atual.left.left != None:
+                    self.rotateRight(atual)
+
+                # Caso para rotação left-left
+                elif atual.right != None and atual.right.right != None:
+                    print('left-left')
+                    self.rotateLeft(atual)
+
             atual = atual.parent
 
 my_tree = ArvoreAVL()
-# nodes = [5,3,8,2,4,6,12,1,7,10,13,9,11]
-nodes = [1,2,3,4,5,6,7,8,9,10]
-my_tree.insertNodes(nodes)
-my_tree.remove(7)
-my_tree.remove(9)
-my_tree.remove(8)
-
-my_tree.insert(12)
-my_tree.remove(6)
-my_tree.inOrder(my_tree.root)
+x = random_nodes(10, 50, repeated=False)
+my_tree.insertNodes(x)
+print(x)
+my_tree.inOrder()
